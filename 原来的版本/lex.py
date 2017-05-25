@@ -1,15 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# 递归和SLR1还有错
 import sys
 from tkinter import filedialog
 from tkinter import *
-import OG
-import LR
-import LL1
-import recursiv_descent
-import SLR
-global input_line
 
 KEYWORD_LIST = ['if', 'else', 'while', 'break', 'continue', 'for', 'double', 'int', 'float', 'long', 'short', 'bool','switch', 'case', 'return', 'void','include']
 
@@ -122,23 +115,22 @@ CATEGORY_DICT = {
 	'**': 355	
 }
 
-current_row = -1    
+current_row = -1    #列
 current_line = 0
 out_line = 1
 global errorTest
 
-# 读取一个字符
-def getchar(input_str):  
+def getchar(input_str): #读取
 	global current_row
 	global current_line
 	current_row += 1
-	if (current_row == len(input_str[current_line])):   
+	if (current_row == len(input_str[current_line])):  # 当前行结束
 		current_line += 1
 		current_row = 0
 	if current_line == len(input_str):    			 
 		return 'FINISH'
 	return input_str[current_line][current_row]
-# 退格
+
 def ungetchar(input_str):
 	global current_row
 	global current_line
@@ -148,7 +140,6 @@ def ungetchar(input_str):
 		current_row = len(input_str[current_row]) - 1
 	return input_str[current_line][current_row]
 
-# 错误报告
 def error(msg, line=None, row=None):
 	global out_line
 	global errorTest	
@@ -160,7 +151,7 @@ def error(msg, line=None, row=None):
 	errorTest.insert(str(out_line) + '.end', "\n")
 	out_line = out_line + 1 
 
-# 扫描器
+
 def scanner(input_str):
 	global current_line
 	global current_row
@@ -170,8 +161,7 @@ def scanner(input_str):
 		return ('FINISH', '', '')
 	if current_char.strip() == '':
 		return
-	# 数字	
-	if current_char.isdigit(): 
+	if current_char.isdigit():#12345+ 
 		int_value = 0
 		while current_char.isdigit():
 			int_value = int_value * 10 + int(current_char)
@@ -187,7 +177,7 @@ def scanner(input_str):
 		if current_char != '.' and current_char != 'e':
 			ungetchar(input_str)
 			return ('INUM', int_value, CATEGORY_DICT['inum'])
-		if current_char == 'e': 
+		if current_char == 'e':#14e-51561
 			power_value = str(int_value) + 'e'
 			current_char = getchar(input_str)
 			if current_char == '+' or current_char == '-':
@@ -203,7 +193,7 @@ def scanner(input_str):
 				error('illigal const int value in power', line, row)
 				return ('FINISH', '', '')
 				return None
-		 
+			#23e-56
 			ungetchar(input_str)
 			return ('INUM', power_value, CATEGORY_DICT['inum'])
 		if current_char == '.':
@@ -221,7 +211,7 @@ def scanner(input_str):
 				return None
 			ungetchar(input_str)
 			return ('FNUM', float_value, CATEGORY_DICT['fnum'])
-	# 标识符		 
+			# _gsrehes56347 
 	if current_char.isalpha() or current_char == '_':
 		string = ''
 		while current_char.isalpha() or current_char.isdigit() or current_char == '_' and current_char != ' ':
@@ -234,8 +224,8 @@ def scanner(input_str):
 			return ("KEYWORD", string, CATEGORY_DICT[string])
 		else:
 			return ('IDN', string, CATEGORY_DICT['IDN'])
-	# 注释
-	if current_char == '\"':   
+	
+	if current_char == '\"':#"     eraha4/*456"
 		str_literal = ''
 		line = current_line + 1
 		row = current_row + 1
@@ -284,8 +274,14 @@ def scanner(input_str):
 	if current_char in SEPARATOR_LIST:
 		return ('SEP', current_char, CATEGORY_DICT[current_char])
 	
-	if current_char in OPERATOR_LIST:		
-		return ('OP', current_char, CATEGORY_DICT[current_char])
+	if current_char in OPERATOR_LIST:
+		op = current_char
+		current_char = getchar(input_str)
+		if(current_char in OPERATOR_LIST):
+			op += current_char
+		else:	
+			ungetchar(input_str)	
+		return ('OP', op, CATEGORY_DICT[op])
 	else:
 		error('unknown character: ' + current_char)
 
@@ -293,21 +289,23 @@ def scanner(input_str):
 	
 def fileloader():
 	global root
-	global input_line
 	code.delete(1.0, END)
-	root.filename =  filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("c files","*.c"),("all files","*.*")))
-	fin = open(root.filename, "r")
+	# root.filename =  filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("c files","*.c"),("all files","*.*")))
+	fin = open("E:\\test.c", "r")
+	
+	
 	input_file = fin.read()
 	input_line = input_file.split("\n")
+	
 	out_line = 1
 	for each in input_line:
 		code.insert(str(out_line) + '.end', str(out_line)+ "   "  + each)
 		code.insert(str(out_line) + '.end', "\n")
 		out_line = out_line + 1
-	print(input_line)	
+	
 	fin.close()
 	
-#　词法分析	
+	
 def lexer_analysis(input_str):
 	global current_row
 	global current_line
@@ -318,20 +316,18 @@ def lexer_analysis(input_str):
 	r = ['','','']
 	while (1):
 		r = scanner(input_str)
+		print(r)
 		if r is not None:
 			analysis_result.append(str(r[0]) + "\t\t" + str(r[1]) + "\t\t" + str(r[2]))			
 			if 	(r[0] == 'FINISH'):
 				return analysis_result
 	return  analysis_result
 	
-#　按键触发函数	
+	
 def lexer():
 	global out_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
 	input_str = []
+	analysis.delete(1.0, END)
 	input_raw = code.get(1.0, END)
 	input_str = input_raw.split("\n")
 	temp = []
@@ -346,112 +342,38 @@ def lexer():
 		analysis.insert(str(out_line) + '.end', str(out_line) + " \t\t "+ each)
 		analysis.insert(str(out_line) + '.end', "\n")
 		out_line = out_line + 1
-
-def OG_():
-	
-	global out_line
-	global input_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
-	result = []
-	for i in range(len(input_line)):
-		result.append(OG.main(input_line[i]))
-		
-		analysis.insert(str(out_line) + '.end',str(out_line) +'\t\tOG\t\t' + result[i])
-		analysis.insert(str(out_line) + '.end', "\n")
-		out_line = out_line + 1	
-
-def descent_ ():
-	global out_line
-	global input_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
-	result = []
-	for i in range(len(input_line)):
-		result.append(recursiv_descent.main(input_line[i]))
-		analysis.insert(str(out_line) + '.end',str(out_line)  +'\t\tdescent\t\t'  + result[i])
-		analysis.insert(str(out_line) + '.end', "\n")
-		out_line = out_line + 1			
-
-def LL1_ ():
-	global out_line
-	global input_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
-	result = []
-	for i in range(len(input_line)):
-		result.append(LL1.main(input_line[i]))
-		analysis.insert(str(out_line) + '.end',str(out_line)  +'\t\tLL(1)\t\t'+ result[i])
-		analysis.insert(str(out_line) + '.end', "\n")
-		out_line = out_line + 1		
-		
-		
+	print(result)	
 
 
-def SLR1_ ():
-	global out_line
-	global input_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
-	result = []
-	for i in range(len(input_line)):
-		result.append(SLR.main(input_line[i]))
-		if (len(result[i]) == 1):
-			analysis.insert(str(out_line) + '.end',str(out_line) +'\t\tSLR(1)\t\t' +  result[i][0])
-			analysis.insert(str(out_line) + '.end', "\n")
-			out_line = out_line + 1		
-		else:
-			for j in range(len(result[i])):
-				analysis.insert(str(out_line) + '.end',str(out_line) +'\t\tSLR(1)\t\t' +  str(result[i][j]))
-				analysis.insert(str(out_line) + '.end', "\n")
-				out_line = out_line + 1			
-		
 
-		
-# 界面展示
 def pre_interface():
+    
 	global root
 	global code
 	global analysis
 	global errorTest
-	
 	root = Tk()
+	
 	menubar = Menu(root)
-	file_menu = Menu(menubar, tearoff=0)
-	file_menu.add_command(label="Open", command=fileloader,font = 26)
-	file_menu.add_command(label="Save" ,font = 26)
-	file_menu.add_command(label="Exit", command=root.quit,font = 26)
-	menubar.add_cascade(label="File", menu=file_menu,font = 26)
+	filemenu = Menu(menubar, tearoff=0)
+	filemenu.add_command(label="Open", command=fileloader,font = 26)
+	filemenu.add_command(label="Save" ,font = 26)
+	filemenu.add_command(label="Exit", command=root.quit,font = 26)
+	menubar.add_cascade(label="File", menu=filemenu,font = 26)
 	
-	lex_menu = Menu(menubar, tearoff=0)
-	lex_menu.add_command(label="lex", command=lexer,font = 26)
-	menubar.add_cascade(label="LEX", menu=lex_menu,font = 26,command = root.quit)
+	lexmenu = Menu(menubar, tearoff=0)
+	lexmenu.add_command(label="lex", command=lexer,font = 26)
+	menubar.add_cascade(label="LEX", menu=lexmenu,font = 26,command = root.quit)
 	
-	windows_menu = Menu(menubar, tearoff=0)
-	windows_menu.add_command(label="fullscreen", command=toggle_fullscreen,font = 26)
-	menubar.add_cascade(label="windows", menu=windows_menu,font = 26)
+	windowsmenu = Menu(menubar, tearoff=0)
+	windowsmenu.add_command(label="fullscreen", command=toggle_fullscreen,font = 26)
+	menubar.add_cascade(label="windows", menu=windowsmenu,font = 26)
 	
-	syntax_menu = Menu(menubar , tearoff = 0)
-	syntax_menu.add_command(label = "descent",command = descent_ ,font = 26)
-	syntax_menu.add_command(label = "LL(1)",command =   LL1_   ,font = 26)
-	syntax_menu.add_command(label = "SLR(1)",command =   SLR1_   ,font = 26)
-	syntax_menu.add_command(label = "OG",command =   OG_   ,font = 26)
-	
-	menubar.add_cascade(label="Syntax", menu = syntax_menu ,font = 26)
-	
-	
-	help_menu = Menu(menubar, tearoff=0)
-	help_menu.add_command(label="Help Index",font = 26)
-	menubar.add_cascade(label="Help", menu=help_menu,font = 26)
+	helpmenu = Menu(menubar, tearoff=0)
+	helpmenu.add_command(label="Help Index",font = 26)
+	menubar.add_cascade(label="Help", menu=helpmenu,font = 26)
 	root.config(menu=menubar)
+	
 	
 	code = Text(root,   font=26)
 	analysis = Text(root, font=26)
@@ -461,14 +383,19 @@ def pre_interface():
 	code.pack(side =LEFT,fill = Y,expand = YES)
 	analysis.pack(side=RIGHT,fill = Y,expand = YES)
 	
+	
 	root.bind("<F11>", toggle_fullscreen)
- 
+	root.bind("<Escape>",end_fullscreen)
+	fileloader()
 	root.mainloop()
 	
 	
 def toggle_fullscreen(event=None):   # 增加全屏属性
 	root.state("zoomed")
 
+def end_fullscreen(event=None):
+	root.attributes("-fullscreen", False)
+# lexer()
 
 def main():
 	pre_interface()

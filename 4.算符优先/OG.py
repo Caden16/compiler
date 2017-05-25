@@ -12,7 +12,7 @@ global index
 
 def error(msg="分析错误，退出"):
 	print(msg)
-	
+	exit(0)
 
 def queryTable(A,a):
 	result =[]
@@ -52,7 +52,6 @@ def analysis():
 	F = {'(':1, ')':7, 'i':7, '*':5, '/':5, '+':3, '-':3, '#':1, }
 	G = {'(':6, ')':1, 'i':6, '*':4, '/':4, '+':2, '-':2, '#':1, }
 	Vt = ['i','+','-','*','/','(',')','#']  
-	Vn = ['E','T','F','N']
 	stack =['#']    #初始化栈
 	top = stack[-1]     #栈顶元素
 
@@ -78,7 +77,6 @@ def analysis():
 			result = F[stack[tempIndex]] > G[current]
 		except:  
 			error('输入符号错误')	
-			return '输入符号错误'
 			
 		if (result ):  # 寻找素短语起始位置			
 			tempTop = stack[tempIndex]		 
@@ -86,6 +84,7 @@ def analysis():
 			if (stack[tempIndex] in Vt):
 				
 				if(F[stack[tempIndex]] < G[tempTop]):  #可归约 
+				 
 					stack.pop()
 					index = index -1
 					entryStack('N')				
@@ -114,20 +113,23 @@ def analysis():
 	step += step
 	tempComponent = [step,'匹配成功','匹配成功']
 	component.append(tempComponent)
-	return '匹配成功'
 			
-def main(string):
+def main():
 	global inputString
 	global component # 表格内容
-	
-	inputString = string
-	inputString = inputString.replace(' ','')
-	return analysis()
-
+	while(1):
+		inputString = input("请输入语句（OG）:")
+		inputString = inputString.replace(' ','')
+		if(inputString == "exit"):
+			break
+		analysis()
+		header = '算符优先文法'
+		subHeader = [ '步骤','符号栈', '剩余串']#
+		drawTable(header,subHeader,component,110,0)  # 最后一个参数为总长度
 
 			
 if __name__ == '__main__':
-    main('i')				
+    main()				
 	
 	
 

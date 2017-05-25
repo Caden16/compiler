@@ -1,15 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# 递归和SLR1还有错
 import sys
 from tkinter import filedialog
 from tkinter import *
-import OG
-import LR
-import LL1
-import recursiv_descent
-import SLR
-global input_line
 
 KEYWORD_LIST = ['if', 'else', 'while', 'break', 'continue', 'for', 'double', 'int', 'float', 'long', 'short', 'bool','switch', 'case', 'return', 'void','include']
 
@@ -284,8 +277,14 @@ def scanner(input_str):
 	if current_char in SEPARATOR_LIST:
 		return ('SEP', current_char, CATEGORY_DICT[current_char])
 	
-	if current_char in OPERATOR_LIST:		
-		return ('OP', current_char, CATEGORY_DICT[current_char])
+	if current_char in OPERATOR_LIST:
+		op = current_char
+		current_char = getchar(input_str)
+		if(current_char in OPERATOR_LIST):
+			op += current_char
+		else:	
+			ungetchar(input_str)	
+		return ('OP', op, CATEGORY_DICT[op])
 	else:
 		error('unknown character: ' + current_char)
 
@@ -293,18 +292,21 @@ def scanner(input_str):
 	
 def fileloader():
 	global root
-	global input_line
 	code.delete(1.0, END)
-	root.filename =  filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("c files","*.c"),("all files","*.*")))
+	root.filename =  filedialog.askopenfilename(
+						initialdir = "/",
+						title = "Select file",
+						filetypes = (("c files","*.c"),
+						("all files","*.*")))
 	fin = open(root.filename, "r")
 	input_file = fin.read()
 	input_line = input_file.split("\n")
+	
 	out_line = 1
 	for each in input_line:
 		code.insert(str(out_line) + '.end', str(out_line)+ "   "  + each)
 		code.insert(str(out_line) + '.end', "\n")
 		out_line = out_line + 1
-	print(input_line)	
 	fin.close()
 	
 #　词法分析	
@@ -327,11 +329,8 @@ def lexer_analysis(input_str):
 #　按键触发函数	
 def lexer():
 	global out_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
 	input_str = []
+	analysis.delete(1.0, END)
 	input_raw = code.get(1.0, END)
 	input_str = input_raw.split("\n")
 	temp = []
@@ -347,110 +346,32 @@ def lexer():
 		analysis.insert(str(out_line) + '.end', "\n")
 		out_line = out_line + 1
 
-def OG_():
-	
-	global out_line
-	global input_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
-	result = []
-	for i in range(len(input_line)):
-		result.append(OG.main(input_line[i]))
-		
-		analysis.insert(str(out_line) + '.end',str(out_line) +'\t\tOG\t\t' + result[i])
-		analysis.insert(str(out_line) + '.end', "\n")
-		out_line = out_line + 1	
 
-def descent_ ():
-	global out_line
-	global input_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
-	result = []
-	for i in range(len(input_line)):
-		result.append(recursiv_descent.main(input_line[i]))
-		analysis.insert(str(out_line) + '.end',str(out_line)  +'\t\tdescent\t\t'  + result[i])
-		analysis.insert(str(out_line) + '.end', "\n")
-		out_line = out_line + 1			
-
-def LL1_ ():
-	global out_line
-	global input_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
-	result = []
-	for i in range(len(input_line)):
-		result.append(LL1.main(input_line[i]))
-		analysis.insert(str(out_line) + '.end',str(out_line)  +'\t\tLL(1)\t\t'+ result[i])
-		analysis.insert(str(out_line) + '.end', "\n")
-		out_line = out_line + 1		
-		
-		
-
-
-def SLR1_ ():
-	global out_line
-	global input_line
-	global errorTest
-	global analysis
-	analysis.delete(1.0, END)
-	errorTest.delete(1.0, END)
-	result = []
-	for i in range(len(input_line)):
-		result.append(SLR.main(input_line[i]))
-		if (len(result[i]) == 1):
-			analysis.insert(str(out_line) + '.end',str(out_line) +'\t\tSLR(1)\t\t' +  result[i][0])
-			analysis.insert(str(out_line) + '.end', "\n")
-			out_line = out_line + 1		
-		else:
-			for j in range(len(result[i])):
-				analysis.insert(str(out_line) + '.end',str(out_line) +'\t\tSLR(1)\t\t' +  str(result[i][j]))
-				analysis.insert(str(out_line) + '.end', "\n")
-				out_line = out_line + 1			
-		
-
-		
 # 界面展示
 def pre_interface():
 	global root
 	global code
 	global analysis
 	global errorTest
-	
 	root = Tk()
 	menubar = Menu(root)
-	file_menu = Menu(menubar, tearoff=0)
-	file_menu.add_command(label="Open", command=fileloader,font = 26)
-	file_menu.add_command(label="Save" ,font = 26)
-	file_menu.add_command(label="Exit", command=root.quit,font = 26)
-	menubar.add_cascade(label="File", menu=file_menu,font = 26)
+	filemenu = Menu(menubar, tearoff=0)
+	filemenu.add_command(label="Open", command=fileloader,font = 26)
+	filemenu.add_command(label="Save" ,font = 26)
+	filemenu.add_command(label="Exit", command=root.quit,font = 26)
+	menubar.add_cascade(label="File", menu=filemenu,font = 26)
 	
-	lex_menu = Menu(menubar, tearoff=0)
-	lex_menu.add_command(label="lex", command=lexer,font = 26)
-	menubar.add_cascade(label="LEX", menu=lex_menu,font = 26,command = root.quit)
+	lexmenu = Menu(menubar, tearoff=0)
+	lexmenu.add_command(label="lex", command=lexer,font = 26)
+	menubar.add_cascade(label="LEX", menu=lexmenu,font = 26,command = root.quit)
 	
-	windows_menu = Menu(menubar, tearoff=0)
-	windows_menu.add_command(label="fullscreen", command=toggle_fullscreen,font = 26)
-	menubar.add_cascade(label="windows", menu=windows_menu,font = 26)
+	windowsmenu = Menu(menubar, tearoff=0)
+	windowsmenu.add_command(label="fullscreen", command=toggle_fullscreen,font = 26)
+	menubar.add_cascade(label="windows", menu=windowsmenu,font = 26)
 	
-	syntax_menu = Menu(menubar , tearoff = 0)
-	syntax_menu.add_command(label = "descent",command = descent_ ,font = 26)
-	syntax_menu.add_command(label = "LL(1)",command =   LL1_   ,font = 26)
-	syntax_menu.add_command(label = "SLR(1)",command =   SLR1_   ,font = 26)
-	syntax_menu.add_command(label = "OG",command =   OG_   ,font = 26)
-	
-	menubar.add_cascade(label="Syntax", menu = syntax_menu ,font = 26)
-	
-	
-	help_menu = Menu(menubar, tearoff=0)
-	help_menu.add_command(label="Help Index",font = 26)
-	menubar.add_cascade(label="Help", menu=help_menu,font = 26)
+	helpmenu = Menu(menubar, tearoff=0)
+	helpmenu.add_command(label="Help Index",font = 26)
+	menubar.add_cascade(label="Help", menu=helpmenu,font = 26)
 	root.config(menu=menubar)
 	
 	code = Text(root,   font=26)

@@ -2,16 +2,12 @@ from drawTable import drawTable
 
 global current
 global inputString
-global component
-global step
 
 def advance():
 	global current
 	current = inputString.pop(0) #pop默认退最后一个
 	
 def A():		
-	global component
-	global step
 
 	if (current == '+' or current == '-'):
 		advance()
@@ -20,10 +16,6 @@ def A():
 		return False
 
 def M():						 
-	global component
-	global step
-	step = step + 1
-	component.append([step , 'M'])
 	if (current == '*' or current == '/'):
 		advance()
 		return True
@@ -31,14 +23,9 @@ def M():
 		return False
 			
 def F():						# ok
-	global component
-	global step
-
 	if (current =='('):
 		advance()
 		if(E()):   # E
-			step = step + 1
-			component.append([step , 'E'])
 			if(current == ')'):
 				advance()
 				return True
@@ -48,20 +35,11 @@ def F():						# ok
 	return False
 	
 def T_():
-	global component
-	global step
 
 	if(current == '*' or current =='/'):
 		if(M()):
-			step = step + 1
-			component.append([step , 'M'])
 			if(F()):
-				step = step + 1
-				component.append([step , 'F'])
 				if(T_()):
-					step = step + 1
-					component.append([step , 'T_'])
-					# advance()
 					return True
 	elif(current ==')' or current =='#' or current =='+' or current =='-'):
 		# advance()       不确定
@@ -69,33 +47,18 @@ def T_():
 	return False	
 		
 def T():
-	global component
-	global step
-
 	if(current =='i' or current =='('):
 		if (F()):
-			step = step + 1
-			component.append([step , 'F'])
 			if(T_()):
-				step = step + 1
-				component.append([step , 'T_'])
 				return True
 	return False
 		
 def E_():
-	global component
-	global step
 
 	if(current =='+' or current =='-'):
 		if (A()):
-			step = step + 1
-			component.append([step , 'A'])
 			if(T()):
-				step = step + 1
-				component.append([step , 'T'])
 				if (E_()):
-					step = step + 1
-					component.append([step , 'E_'])
 					return True
 					
 	elif(current ==')' or current =='#'):
@@ -103,26 +66,19 @@ def E_():
 	return False
 	
 def E():
-	global component
-	global step
 	
 	if(current =='i' or current =='('):
 		if(T()):
-			step = step + 1
-			component.append([step , 'T'])
 			if(E_()):
-				step = step + 1			
-				component.append([step , 'E_'])	
 				return '匹配成功'		
-	step = step + 1			
-	component.append([step , 'fail'])			
 	return '匹配失败'			
 
 def main(string):
 	global current
 	global inputString 	
-	inputString = string
-	inputString .append('#')
+	inputString = list(string)
+	
+	inputString.append('#')
 	current=inputString.pop(0)
 	return E()
 		

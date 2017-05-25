@@ -1,8 +1,7 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 # 用户输入 := 的问题还没解决，主函数的状态尚未清楚
 
 from drawTable import drawTable
+global component # 表格内容
 global flag   #成功标志
 global inputString
 global stateStack 
@@ -121,47 +120,78 @@ def advance():  			# 将输入串后移一位
 		
 	
 def analysis():
+	global component
 	global operStack
 	global stateStack
 	global top 
 	global current 
 	global inputString  # 
 	global entry
+	global index
 	global actionTable
-	global index 
 	global gotoTable
 	global flag   #成功标志
 	operStack =['#']    #初始化栈
 	top = operStack[-1]     #栈顶元素
-	index = 0
 	stateStack = [0]
-	inputString.append('#')           # 末尾再加上一个# 防止最后advance时 出界  
+	inputString = list(inputString)   # 源串
+	# inputString.append('#')           # 末尾再加上一个# 防止最后advance时 出界  
 	current = inputString.pop(0)		  # 当前字符
-	
+	index = 0	
+	step = 0 # 步骤数
+	component = [] # 具体表格项
+	flag = False
 	while(operStack[-1] != 'S' ):  # 结束条件
+		tempComponent = []
+		# tempComponent.append(step)
+		tempComponent.append(str(operStack))
+		tempComponent.append(str(stateStack))
+		print("当前字符：",end = "")
+		print(current)
+		print("状态符栈：",end = "")
+		print(stateStack)
+		print("操作符栈：",end = "")
+		print(operStack)
 		state = stateStack[-1]	
-		try:
-			nextAction = actionTable[state][current]
-		except:
-			return '查表错误'	
+		nextAction = actionTable[state][current]
+		tempComponent.append(nextAction) # 表项最后一列为采取的动作
 
 		if(nextAction == ' '):
 			advance()#   直到状态栈顶对应操作符栈顶 查表失败后，再把输入串进一下
 			continue
 		eval(nextAction)
-	 
-	return '匹配成功'
+		step = step + 1
+		component.append(tempComponent)
+		print(tempComponent)
+	# print("当前字符：",end = "")
+	# print(current)
+	# print("状态符栈：",end = "")
+	# print(stateStack)
+	# print("操作符栈：",end = "")
+	# print(operStack)
+	# print("输入串：",end = "")
+	# print(inputString)
+	# print("成功")
+	return 0
 	
 	
-def main(string):  
+def main():
 	global inputString
-	global index 
-	index = -1
-	inputString = list(string)
-	inputString = inputString.replace(' ','')
-	return analysis()
+	global component
+	while(1):
+		inputString = input("请输入语句（以#结束）")
+		inputString = 'i-(i+i)#'
+		if(inputString == "exit"):
+			break
+		if (inputString[-1]!='#'):
+			continue
+		analysis()
+		header = 'LR分析'
+		subHeader = ['状态栈', '符号栈', '动作']#
+		# print(component)
+		drawTable(header,subHeader,component,110,0)  # 最后一个参数为总长度
 		
 if __name__ == '__main__':
-    main('i+i-(i)')				
+    main()				
 		
 	

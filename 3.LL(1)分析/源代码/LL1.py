@@ -32,7 +32,6 @@ def queryTable(A,a):
 		result = table[A][a]
 	except:  
 		error('查表出错')
-		
 		return False
 	return result
 
@@ -83,34 +82,36 @@ def analysis():
 				advance()				 
 			else:
 				error(' 非法字符 ')
-				return '非法字符'
 				break
 		elif(top == '#'):
 			if(current == '#'):
 				flag = False			# 匹配成功，可以退出
 			else:
 				error("非法结束")
-				return '非法字符'
 				break
 		else:
 			result = queryTable(top,current)
 			if(False != result):
 				entryStack(result)				# 进栈
-			else:	
-				return '查表出错'				# 查表出错
+			else:								# 查表出错
 				break
 		step = step + 1	
 	if(flag == False):
-		return '匹配成功'
-		
-def main(string):
+		tempComponent = [step,'匹配成功','匹配成功']
+		component.append(tempComponent)
+			
+def main():
 	global inputString
 	global component
-
-	inputString = string
-	inputString = inputString.replace(' ','')
-	return analysis()
-		
+	while(1):
+		inputString = input("请输入语句 (LL1):")
+		inputString = inputString.replace(' ','')
+		if(inputString == "exit"):
+			break
+		analysis()
+		header = 'LL1分析'
+		subHeader = [ '步骤','分析栈', '剩余串']#
+		drawTable(header,subHeader,component,150,0)  #表格长度110 不居中
 				
 if __name__ == '__main__':
     main()				
